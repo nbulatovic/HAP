@@ -10,8 +10,8 @@ double fprime(double x){return 2*x;}
 
 double sqrt_newton(double num, double x0)
 {
-    double tolerance = 10e-7;
-    double epsilon = 10e-14;
+    double tolerance = 1e-7;
+    double epsilon = 1e-14;
     int maxIterations = 20;
     double x1;
     bool haveWeFoundSolution = false;
