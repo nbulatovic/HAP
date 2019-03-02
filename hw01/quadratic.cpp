@@ -14,12 +14,12 @@ void solve(double a, double b, double c)
         std::cout << "1 solution: " << -b/(2*a)<< "\n"; 
     }
     
-    if (D > 0)
+    else if (D > 0)
     {
         std::cout << "2 solution: " << (-b+std::sqrt(D))/(2*a) << "\tand\t" << (-b-std::sqrt(D))/(2*a) << "\n"; 
     }
     
-    if (D < 0)
+    else if (D < 0)
     {
         std::cout << "No real solutions" << "\n";
     }
