@@ -18,9 +18,6 @@
         return x_size;
     };
 
-    
-
-
     template <typename T, typename F>
     auto regression(T const& x, F const& y)
     {
@@ -84,28 +81,6 @@
         std::array<double,3> result = {m, b, r*r};
 
         return result;
-    
-    /* //maybe
-        std::transform (x.begin(),
-                        x.end(),
-                        y.begin(),
-                        results.begin(),
-                        [x_avg, y_avg](auto const& x, auto const& y)
-                        {
-                            std::array<double,5> result;
-                            double diffx = x-x_avg;
-                            double diffy = y-y_avg;
-
-                            result[0] = diffx*diffy;
-                            result[1] = diffx*diffx;
-                            result[2] = x*y;
-                            result[3] = x*x;
-                            result[4] = y*y;
-
-                            return result;
-                        });          
-        */
-
     }
 
     void test()
@@ -126,7 +101,8 @@
         std::cout <<  "diff_m: " << m-exact_m << "\ndiff_b: " << b-exact_b << "\ndiff_r2: " << r2-exact_r2;
     }
     int main(int, char**) {
-        
+
+     
         std::vector<double> x = {1.0, 2.0};
         std::vector<double> y = {1.0, 2.0};
         test();

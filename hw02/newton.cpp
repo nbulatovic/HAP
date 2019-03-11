@@ -4,9 +4,9 @@
 #include <numeric>
 #include <algorithm> 
 
-auto f = [](double x){return x*x - 612.0;};
-auto fp = [](double x){return 2.0*x;};
-auto continueiter = [](double x0, double x1)
+auto f = [](auto x){return x*x - 612.0;};
+auto fp = [](auto x){return 2.0*x;};
+auto continueiter = [](auto x0, auto x1)
     {
         double tolerance = 1e-7;
         if(std::abs(x1 - x0) <= tolerance * std::abs(x1))
@@ -20,8 +20,8 @@ auto continueiter = [](double x0, double x1)
     };
 
 
-template<typename F, typename P, typename T>
-double Newton(F f, P fprime,T check, double x0)
+template<typename F, typename P, typename T, typename E>
+double Newton(F f, P fprime,T check, E x0)
 {
     
     double epsilon = 1e-14;

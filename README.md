@@ -7,3 +7,11 @@ Homeworks - Advanced applied programming course (Haladó alkalmazott programozá
 - Quadrtic formula: quadratic.cpp
 - Numerical integrator: integrator.cpp
 - Square root of a number by Newton method: sqrtnewton.cpp
+
+### hw02's tasks 
+
+- Square root of a number by Newton method (with templates): newton.cpp
+
+### hw03's tasks 
+
+- Simple linear regression: main.cpp
