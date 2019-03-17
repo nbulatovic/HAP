@@ -15,71 +15,51 @@
 
         if(x_size != y_size) {std::cout<< "x_size != y_size, exit"; std::exit(EXIT_FAILURE);}
                                              
-        return x_size;
+        return static_cast<double>(x_size);
     };
 
-    template <typename T, typename F>
-    auto regression(T const& x, F const& y)
+    template <typename T>
+    auto regression(const T& x, const T& y)
     {
         
-        size_t size = check_size(x,y);
-        std::vector<double> numerator(size);
-        std::vector<double> denominator(size);
-        std::vector<std::array<double,5>> results(size);
-
-        const double len = static_cast<double>(size);
+        const double len = check_size(x,y);
+        double numerator = 0.0;
+        double denominator = 0.0;
+        double r2_denominator = 0.0;
 
         const double x_avg = average(x, len);
         const double y_avg = average(y, len);
 
 
-        std::transform (y.begin(),
-                        y.end(),
-                        x.begin(),
-                        numerator.begin(),
-                        [y_avg,x_avg](auto const y, auto const x){return (x-x_avg)*(y-y_avg);});
-
-        std::transform (x.begin(),
+        numerator = std::inner_product (x.begin(),
                         x.end(),
-                        denominator.begin(),
-                        [x_avg](auto const x){double diff = x-x_avg; return diff*diff;});
-
-        const double sum_numerator = std::accumulate(numerator.begin(), numerator.end(), 0.0);
-        const double sum_denominator = std::accumulate(denominator.begin(), denominator.end(), 0.0);
-
-        const double m = sum_numerator/sum_denominator;
-        const double b = y_avg - m*x_avg;
-
-        std::vector<double> xy(size);
-        std::transform (y.begin(),
-                        y.end(),
-                        x.begin(),
-                        xy.begin(),
-                        std::multiplies<double>() );
-        const double xy_avg = average(xy,len);
-
-    
-        std::vector<double> x2(size);
-        std::transform (x.begin(),
-                        x.end(),
-                        x.begin(),
-                        x2.begin(),
-                        std::multiplies<double>() );
-        const double x2_avg = average(x2,len);
-
-        std::vector<double> y2(size);
-        std::transform (y.begin(),
-                        y.end(),
                         y.begin(),
-                        y2.begin(),
-                        std::multiplies<double>() );
-        const double y2_avg = average(y2,len);
+                        0.0,
+                        std::plus<double>(),
+                        [x_avg,y_avg](auto const x, auto const y){return (x-x_avg)*(y-y_avg);});
 
-        const double r = (xy_avg-x_avg*y_avg)/(std::sqrt((x2_avg-(x_avg*x_avg))*(y2_avg-(y_avg*y_avg))));
+        denominator = std::inner_product (x.begin(),
+                        x.end(),
+                        x.begin(),
+                        0.0,
+                        std::plus<double>(),
+                        [x_avg](auto const x, auto const y){return (x-x_avg)*(y-x_avg);});
 
+        r2_denominator = std::sqrt(std::accumulate(x.begin(),
+                            x.end(),
+                            0.0,
+                            [x_avg](auto a, auto const x){double diff = x-x_avg; return a+diff*diff;})
+                        *
+                        std::accumulate(y.begin(),
+                            y.end(),
+                            0.0,
+                            [y_avg](auto a, auto const x){double diff = x-y_avg; return a+diff*diff;}));
 
-        std::array<double,3> result = {m, b, r*r};
-
+        const double m = numerator/denominator;
+        const double b = y_avg-m*x_avg;
+        const double r2 = numerator/r2_denominator;
+    
+        std::array<double,3> result = {m,b,r2};
         return result;
     }
 
@@ -90,6 +70,31 @@
 
         std::array<double,3> res = regression(x,y);
 
+        
+
+        double exact_m = 61.272;
+        double exact_b = -39.062;
+        double exact_r2 = 0.9945;
+
+        double m = res[0];
+        double b = res[1];
+        double r2= res[2];
+
+        
+        std::cout<<"TEST FROM https://en.wikipedia.org/wiki/Simple_linear_regression#Fitting_the_regression_line\n";
+        std::cout <<  "m: " << m << "\nb: " << b << "\nr2: " << r2 << "\n";
+        std::cout <<  "diff_m: " << m-exact_m << "\ndiff_b: " << b-exact_b << "\ndiff_r2: " << r2-exact_r2 << "\n";
+    }
+
+    void test2()
+    {
+        std::vector<double> y = {52.21,53.12,54.48,55.84,57.20,58.57,59.93,61.29,63.11,64.47,66.28,68.10,69.92,72.19,74.46};
+        std::vector<double> x = {1.47,1.5,1.52,1.55,1.57,1.60,1.63, 1.65,1.68,1.7,1.73,1.75,1.78,1.80,1.83};
+
+        std::array<double,3> res = regression(x,y);
+
+        
+
         double exact_m = 23.42;
         double exact_b = 167.68;
         double exact_r2 = 0.9767;
@@ -97,13 +102,18 @@
         double m = res[0];
         double b = res[1];
         double r2= res[2];
+
+        
         std::cout<<"TEST FROM https://www.displayr.com/what-is-linear-regression\n";
-        std::cout <<  "diff_m: " << m-exact_m << "\ndiff_b: " << b-exact_b << "\ndiff_r2: " << r2-exact_r2;
+        std::cout <<  "m: " << m << "\nb: " << b << "\nr2: " << r2 << "\n";
+        std::cout <<  "diff_m: " << m-exact_m << "\ndiff_b: " << b-exact_b << "\ndiff_r2: " << r2-exact_r2 ;
     }
+
     int main(int, char**) {
 
      
         std::vector<double> x = {1.0, 2.0};
         std::vector<double> y = {1.0, 2.0};
         test();
+        test2();
     }

@@ -15,3 +15,7 @@ Homeworks - Advanced applied programming course (Haladó alkalmazott programozá
 ### hw03's tasks 
 
 - Simple linear regression: main.cpp
+
+### hw04's tasks
+
+-2d vector class implementation: vector2.h, main.cpp 
