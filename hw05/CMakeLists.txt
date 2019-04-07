@@ -9,7 +9,7 @@ endif (MSVC)
 include(CTest)
 enable_testing()
 
-add_executable(hw05 main.cpp)
+add_executable(hw05 test.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES    CXX_STANDARD 17
                                                     CXX_STANDARD_REQUIRED ON
