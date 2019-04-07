@@ -16,7 +16,7 @@ struct Vector2d
         return *this;
     };
 
-    auto operator-=( const Vector2d<T> const& v)
+    auto& operator-=( const Vector2d<T> const& v)
     {
         x -= v.x;
         y -= v.y;
@@ -30,7 +30,7 @@ struct Vector2d
         return *this;
     };
 
-    auto operator/=( T const lambda)
+    auto& operator/=( T const lambda)
     {   
         if(lambda != static_cast<T>(0))
         {
