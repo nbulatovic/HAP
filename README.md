@@ -18,4 +18,8 @@ Homeworks - Advanced applied programming course (Haladó alkalmazott programozá
 
 ### hw04's tasks
 
--2d vector class implementation: vector2.h, main.cpp 
+-2d vector class implementation: vector2.hpp, main.cpp 
+
+### hw05's tasks
+
+-matrix class implementation: matrix.hpp, test.cpp 
