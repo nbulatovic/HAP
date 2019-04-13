@@ -5,15 +5,12 @@ void MatrixTest(double precision)
     auto Error = [](auto str){ std::cout << "matrix.hpp error in: " << str << "\n"; std::exit(-1); };
 	auto check_values = [](auto const& x, auto const& y, double prec)
 						{
-							return (std::abs(x[0]-y[0]) > prec ||
-							std::abs(x[1]-y[1]) > prec ||
-							std::abs(x[2]-y[2]) > prec || 
-							std::abs(x[3]-y[3]) > prec || 
-							std::abs(x[4]-y[4]) > prec || 
-							std::abs(x[5]-y[5]) > prec || 
-							std::abs(x[6]-y[6]) > prec || 
-							std::abs(x[7]-y[7]) > prec || 
-							std::abs(x[8]-y[8]) > prec);
+							bool check = true;
+							for(int i=0;i<(int)x.size();i++)
+							{
+								check = check && (std::abs(x[0]-y[0]) > prec);
+							}
+							return check;
 						};
 
     //Default constructor test and indexing:
@@ -26,6 +23,7 @@ void MatrixTest(double precision)
     }
     //Test constructor size check:
 	{
+		std::cout<<"Expected error: 'Linear size doesn't match with the data size! Default constructor called.'\n";
 		Matrix<double> a(9,{3.5, 5.2, 9.3, 6.6, 1.2, 0.0, 10.0, 24.0, 99.99});
 		
 		if(a.size() != 0)         { Error("contructor size check test [size]");}
@@ -48,8 +46,42 @@ void MatrixTest(double precision)
         
 		if(++ ++ ++ ++ ++ ++ ++ ++ ++(a.begin()) != a.end()) {Error("initializer list constructor test [begin + 9 == end]");   }
 		if(++ ++ ++ ++ ++ ++ ++ ++ ++(a.cbegin()) != a.cend()) {Error("initializer list constructor test [cbegin + 9 == cend]"); }
-     }
-     //Test copy constructor and indexing:
+    }
+	//Test empty constructor
+	{
+		Matrix<double> a(3);
+		if(a.size() != 9)   { Error("empty constructor test [size]");}
+		if(a.dim() != 3)   { Error("empty constructorr test [dim]");}
+
+		if(a[0] != 0.0 || a[1] != 0.0 || a[2] != 0.0|| a[3] != 0.0 ||
+           a[4] != 0.0 || a[5] != 0.0 || a[6] != 0.0 || a[7] != 0.0 || 
+           a[8] != 0.0)   { Error("empty constructor test [indexing with []]");   }
+		if(a(0,0) != 0.0 || a(0,1) != 0.0 || a(0,2) != 0.0 || a(1,0) != 0.0 ||
+           a(1,1) != 0.0 || a(1,2) != 0.0 || a(2,0) != 0.0 || a(2,1) != 0.0 || 
+           a(2,2) != 0.0)   { Error("empty constructor test [indexing with ()]");   }
+		
+		if(++ ++ ++ ++ ++ ++ ++ ++ ++(a.begin()) != a.end()) {Error("empty constructor test [begin + 9 == end]");   }
+		if(++ ++ ++ ++ ++ ++ ++ ++ ++(a.cbegin()) != a.cend()) {Error("empty constructor test [cbegin + 9 == cend]"); }
+	}
+	//Test function constructor
+	{
+		Matrix<double> a(9,[](auto const& x){return sq(x);});
+
+		if(a.size() != 9)   { Error("function constructor test [size]");}
+		if(a.dim() != 3)   { Error("function constructorr test [dim]");}
+
+		if(a[0] != 0.0 || a[1] != 1.0 || a[2] != 4.0|| a[3] != 9.0 ||
+           a[4] != 16.0 || a[5] != 25.0 || a[6] != 36.0 || a[7] != 49.0 || 
+           a[8] != 64.0)   { Error("function constructor test [indexing with []]");   }
+		if(a(0,0) != 0.0 || a(0,1) != 1.0 || a(0,2) != 4.0 || a(1,0) != 9.0 ||
+           a(1,1) != 16.0 || a(1,2) != 25.0 || a(2,0) != 36.0 || a(2,1) != 49.0 || 
+           a(2,2) != 64.0)   { Error("function constructor test [indexing with ()]");   }
+		
+		if(++ ++ ++ ++ ++ ++ ++ ++ ++(a.begin()) != a.end()) {Error("function constructor test [begin + 9 == end]");   }
+		if(++ ++ ++ ++ ++ ++ ++ ++ ++(a.cbegin()) != a.cend()) {Error("function constructor test [cbegin + 9 == cend]"); }
+
+	}
+    //Test copy constructor and indexing:
 	{
 		Matrix<double> a(3,{3.5, 5.2, 9.3, 6.6, 1.2, 0.0, 10.0, 24.0, 99.99});
 		Matrix<double> b{a};
@@ -83,6 +115,38 @@ void MatrixTest(double precision)
 		if(++ ++ ++ ++ ++ ++ ++ ++ ++(b.begin()) != b.end()) { Error("move constructor test [begin + 9 == end]");}
 		if(++ ++ ++ ++ ++ ++ ++ ++ ++(b.cbegin()) != b.cend()) { Error("move constructor test [cbegin + 9 == cend]");}
 	}
+
+	//Test matrix function constructor1
+	{
+		Matrix<double> a(3,{3.5, 5.2, 9.3, 6.6, 1.2, 0.0, 10.0, 24.0, 99.99});
+		double scl = 5.0;
+		Matrix<double> ref(3,{6.12500000000000e+01,1.35200000000000e+02,4.32450000000000e+02,
+   							  2.17800000000000e+02,7.20000000000000e+00,0.00000000000000e+00,
+   							  5.00000000000000e+02,2.88000000000000e+03,4.99900005000000e+04});
+		Matrix<double> res(a,[=](auto const& x){return sq(x)*scl;}); 
+
+		if(a.size() != 9)  { Error("matrix function  constructor1 test [src size]");}
+		if(a.dim() != 3)   { Error("matrix function constructor1 test [src dim]");}
+		if(res.size() != 9)  { Error("matrix function constructor1 test [res size]");}
+		if(res.dim() != 3)   { Error("matrix function constructor1 test [res dim]");}
+		if(check_values(ref,res,precision)){ Error("matrix function constructor1 test [res elements]"); }
+	}
+	//Test matrix function constructor2
+	{
+		Matrix<double> a(3,{3.5, 5.2, 9.3, 6.6, 1.2, 0.0, 10.0, 24.0, 99.99});
+		Matrix<double> b(3,{15.6, 87.4, 4.03, 0.0, 11.2, 40.0, 86.7, 77.64, 0.01});
+		double scl = 5.0;
+		Matrix<double> ref(3,{95.5, 463.0000000000001,66.65,33.0,62.0,200.0,483.5,508.2,500.0});
+		Matrix<double> res(a,b,[=](auto const& x,auto const& y){return (x+y)*scl;}); 
+
+		if(a.size() != 9)  { Error("matrix function  constructor2 test [src size]");}
+		if(a.dim() != 3)   { Error("matrix function constructor2 test [src dim]");}
+		if(b.size() != 9)  { Error("matrix function constructor2 test [src size]");}
+		if(b.dim() != 3)   { Error("matrix function constructor2 test [src dim]");}
+		if(res.size() != 9)  { Error("matrix function constructor2 test [res size]");}
+		if(res.dim() != 3)   { Error("matrix function constructor2 test [res dim]");}
+		if(check_values(ref,res,precision)){ Error("matrix function constructor2 test [res elements]"); }
+	}
     //Test assignment:
 	{
 		Matrix<double> a(3,{3.5, 5.2, 9.3, 6.6, 1.2, 0.0, 10.0, 24.0, 99.99});
@@ -103,10 +167,10 @@ void MatrixTest(double precision)
     //Test self assignment:
 	{
 		Matrix<double> a(3,{3.5, 5.2, 9.3, 6.6, 1.2, 0.0, 10.0, 24.0, 99.99});
-
 		a = a;
-		if(a.size() != 9) { Error("self assignment test [size]");     }
-		if(a.dim() != 3) { Error("self assignment test [dim]");     }
+
+		if(a.size() != 9) { Error("self assignment test2 [size]");     }
+		if(a.dim() != 3) { Error("self assignment test2 [dim]");     }
 		if(a[0] != 3.5 || a[1] != 5.2 || a[2] != 9.3 || a[3] != 6.6 ||
            a[4] != 1.2 || a[5] != 0.0 || a[6] != 10.0 || a[7] != 24.0 || 
            a[8] != 99.99) { Error("self assignment test [elements]"); }
@@ -194,6 +258,17 @@ void MatrixTest(double precision)
 		if(a.dim() != 3) { Error("/= test [dim]");     }
 		if(check_values(ref,a,precision)){ Error("/= test [res elements]"); }
 	}
+	//Test set_to_default
+	{
+		Matrix<double> a(2,{3.5 , 5.2 ,  9.3, 6.6});
+		a.set_to_default();
+		if(a.size() != 0) { Error("set_to_default test  [size]");     }
+		if(a.dim() != 0) { Error("set_to_default test [dim]");     }
+		if(a.begin() != a.end())  { Error("set_to_default  test [begin == end]");}
+		if(a.cbegin() != a.cend()){ Error("set_to_default test [cbegin == cend]");}
+
+
+	} 
 	//Test operator+ (l-value, l-value)
 	{
 		Matrix<double> a(3,{3.5 , 5.2 ,  9.3, 6.6,  1.2,  0.0, 10.0,  24.0, 99.99});
@@ -506,7 +581,7 @@ void MatrixTest(double precision)
 
 
     std::cout << "All tests are successful!\n";
-};
+}; 
 int main(int, char**)
 {
     MatrixTest(1e-13);
