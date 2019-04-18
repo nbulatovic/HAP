@@ -6,7 +6,7 @@ The first two task compiled with *g++* only: g++ -std=c++17 -O2 -Wall -pedantic 
 
 - Quadrtic formula: quadratic.cpp ✔
 - Numerical integrator: integrator.cpp ✔
-- Square root of a number by Newton method: sqrtnewton.cpp ✔s
+- Square root of a number by Newton method: sqrtnewton.cpp ✔
 
 ### hw02's tasks 
 
