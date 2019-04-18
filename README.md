@@ -17,7 +17,7 @@ The first two task compiled with *g++* only: g++ -std=c++17 -O2 -Wall -pedantic 
 ### hw03's tasks 
 
 - Simple linear regression: regression.hpp ✔
-- Optional: with $R^2$ ✔
+- Optional: with R2 ✔
 - Test: main.cpp ✔ 
 
 ### hw04's tasks
