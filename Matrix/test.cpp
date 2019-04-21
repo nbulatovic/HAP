@@ -69,7 +69,7 @@ void MatrixTest(double precision)
 	}
 	//Test function constructor1
 	{
-		Matrix<double> a(Matrix<double>::Idx1{},9,[](auto const& x){return sq(x);});
+		Matrix<double> a(Matrix<double>::Idx1{},3,[](auto const& x){return sq(x);});
 
 		if(a.size() != 9)   { error("function constructor1 test [size]");}
 		if(a.dim() != 3)   { error("function constructorr1 test [dim]");}
@@ -87,7 +87,7 @@ void MatrixTest(double precision)
 	}
 	//Test function constructor2
 	{
-		Matrix<double> a(Matrix<double>::Idx2{},9,[](auto const& x,auto const& y){return std::sqrt(x+y);});
+		Matrix<double> a(Matrix<double>::Idx2{},3,[](auto const& x,auto const& y){return std::sqrt(x+y);});
 		Matrix<double> ref(3,{0.0,1.0,1.41421356237310,1.0,1.41421356237310, 1.73205080756888,
 							  1.41421356237310,1.73205080756888,2.0 });
 		
@@ -602,33 +602,22 @@ void MatrixTest(double precision)
 		std::stringstream ss;
 		ss << a;
 
-		std::string tmp;
-		double element = 0.0;
-		bool check = true;
-		int i = 0;
 
-		while(std::getline(ss, tmp))
-		{   
-       		std::stringstream row(tmp);
-        	while(std::getline(row, tmp, '\t'))
-			{
-            element = std::stod(tmp);
-			check = check && (element == a[i]);
-			i++;
-        	}
-		}
-		if(check == false){{ error("<< operator test"); }}
+		std::string res = ss.str();
+		std::string ref = "3.5\t5.2\t9.3\t\n6.6\t1.2\t0\t\n10\t24\t99.99\t\n\n";
+
+		if(res != ref){{ error("<< operator test"); }}
 	}
 	//Test >> operator
 	{
 		Matrix<double> a;
 		std::stringstream ss;
 
-		ss << "3\n3.5\t5.2\t9.3\t6.6\n1.2\t0.0\t10.0\t24.0\t99.99\n\n";
+		ss << "3\n3.5\t5.2\t9.3\n6.6\t1.2\t0.0\n10.0\t24.0\t99.99\n\n";
 		ss >> a;
 
-		if(a.size() != 9) { error(">> operator test  [src size]");}
-		if(a.dim() != 3) { error(">> operator test [src dim]");}
+		if(a.size() != 9) { error(">> operator test  [size]");}
+		if(a.dim() != 3) { error(">> operator test [dim]");}
 		if(a[0] != 3.5 || a[1] != 5.2 || a[2] != 9.3 || a[3] != 6.6 ||
            a[4] != 1.2 || a[5] != 0.0 || a[6] != 10.0 || a[7] != 24.0 || 
            a[8] != 99.99)   { error(">> operator test");   }		
@@ -644,7 +633,5 @@ int main(int, char**)
 {
 
 	MatrixTest(1e-15);
-
-
 	
 }

@@ -41,8 +41,8 @@ public:
     //TESTED
     Matrix(): data{},dimension{0}{}
     //TESTED
-    Matrix(int element, std::initializer_list<T> const& il):    data{il}, 
-                                                                dimension{element}
+    Matrix(int _dim, std::initializer_list<T> const& il):    data{il}, 
+                                                             dimension{_dim}
     {
         if (sq(dimension) != data.size())
         {
@@ -52,25 +52,26 @@ public:
         }
     }
     //TESTED
-    Matrix(int n    )
+    Matrix(int n)
 	{
 		data.resize(sq(n));
         dimension = n;
     }
     //TESTED
     template<typename F>
-	Matrix(Idx1,int n, F f)
+	Matrix(Idx1,int _dim, F f)
 	{
+        int n = sq(_dim);
 		data.resize(n);
 		for(int i=0; i<n; ++i){ data[i] = f(i); }
-        dimension = static_cast<int>(std::sqrt(n));
+        dimension = _dim;
     }
     //TESTED
     template<typename F>
-	Matrix(Idx2, int n, F f)
+	Matrix(Idx2, int _dim, F f)
 	{
+        int n = sq(_dim);
 		data.resize(n);
-        int _dim = static_cast<int>(std::sqrt(n));
 		for(int i=0; i<_dim; i++)
             { 
                 for(int j=0; j<_dim ; j++)
@@ -195,8 +196,9 @@ public:
         data = {};
         dimension = 0;
     }
-    auto set_size(int new_size)
+    auto set_size(int new_dim)
     {
+        int new_size = sq(new_dim);
         if(dimension !=0)
         {
             std::cout<<"Matrix already has a size!" << std::endl;
@@ -204,7 +206,7 @@ public:
         else
         {
             data.resize(new_size);
-            dimension = static_cast<int>(std::sqrt(new_size));
+            dimension = new_dim;
         }
         return *this;
     }
@@ -328,7 +330,7 @@ Matrix<T> operator*( Matrix<T>  const& m1, Matrix<T>  const& m2 )
         int _dim = m1.dim();
 
         return Matrix<T>(Matrix<T>::Idx2{},
-                         sq(_dim),
+                         _dim,
                          [&](int i, int j)
                          {
                             T sum = static_cast<T>(0.0);
@@ -466,34 +468,50 @@ std::ostream& operator<<( std::ostream& s, Matrix<T> const& m )
 template<typename T>
 std::istream& operator>>( std::istream& s, Matrix<T>& m )
 {
-    auto restore_stream = [state = s.rdstate(), pos = s.tellg(), &s](){ s.seekg(pos); s.setstate(state); };
+    auto restore_stream = [state = s.rdstate(), pos = s.tellg(), &s]()
+                          {
+                              s.seekg(pos);
+                              s.setstate(state);
+                              s.clear(); 
+                          };
 
     std::string tmp;
-    std::getline(s, tmp, '\n');
-    if(tmp.size() == 0){ restore_stream(); return s; }
+    std::getline(s, tmp);
+    if(s.fail() == 1){ restore_stream(); return s; }
     
     int _dim = std::stoi(tmp);
-    m.set_size(sq(_dim));
+    int _size = sq(_dim);
+    std::vector<T> temp_vec;
+    temp_vec.reserve(_size); 
 
-    int i = 0;
-    
+    T element;
+
     while(std::getline(s, tmp))
-		{   
-            if(tmp.size() == 0){ restore_stream(); return s; }
-       		std::stringstream row(tmp);
-        	while(std::getline(row, tmp, '\t'))
-			{
-            m[i] = static_cast<T>(std::stod(tmp));
-			i++;
-        	}
-		}
-    
+	{   
+        if(s.fail() == 1){ restore_stream(); return s; }
+        std::stringstream row(tmp);
+        while(std::getline(row, tmp, '\t'))
+        {
+            if(s.fail() == 1){ restore_stream(); return s; }
+            std::stringstream value(tmp);
+            value >> element;
+            if(s.fail() == 1){ restore_stream(); return s; }
+            temp_vec.push_back(element);
+        }
+	}
+
+    m.set_size(_dim);
+    std::transform( temp_vec.begin(),
+                    temp_vec.end(),
+                    m.begin(),
+                    [](auto const& x){return x;});
+
     return s;
 }
 
 
 
-//TODO: matrix inverse for Matrix<T> operator/(Matrix<T> const& m1,Matrix<T> const& m2 )
+
 
 
 
