@@ -5,18 +5,27 @@
 #include <numeric>
 
 
-//Activation function
+//Activation functions
 
 auto RELU = [](double const& x)
 {
     if(x > 0) {return x;}
     else {return 0.0;}
 };
+auto Sigmoid = [](double const& x)
+{
+    return 1.0/(1.0+std::exp(-x));
+};
 auto RELU_Derivative = [](double const& x)
 {
     if(x > 0) {return 1.0;}
     else {return 0.0;}
 };
+auto Sigmoid_Derivative = [](double const& x)
+{
+    return Sigmoid(x)*(1.0-Sigmoid(x));
+};
+
 
 //One-hot encoding
 
@@ -41,7 +50,7 @@ auto OneHotEncoding(std::vector<int> & Labels, int NumberOfExamples)
 }
 
 //Initializing a layer
-auto InitializeLayer(const int & InputDimension,const int & OutputDimension)
+auto InitializeLayer(const int & InputDimension,const int & OutputDimension, double scale)
 {
     //std::random_device rd{};
     //std::mt19937 gen(rd());
@@ -52,7 +61,8 @@ auto InitializeLayer(const int & InputDimension,const int & OutputDimension)
     const int _size =  InputDimension * OutputDimension;
     W.reserve(_size);
 
-    for(int i = 0; i < _size; i++) {W.push_back(distr(gen));}
+    for(int i = 0; i < _size; i++) {W.push_back(distr(gen)*scale);}
+    //for(int i = 0; i < _size; i++) {W.push_back(gen()*scale);}
 
     return W;
 }
@@ -77,6 +87,7 @@ void MatrixMultiplication(std::vector<double>  const& right,
     int N = LeftDimension[0];
     int K = LeftDimension[1];
     int L = RightDimension[1];
+    double RightElement = 0.0;
 
     for(int i = 0; i < N; i++)
     {
@@ -84,7 +95,8 @@ void MatrixMultiplication(std::vector<double>  const& right,
         {
             for(int k = 0; k < K; k++)
             {
-            sum += left[i * K + k] * right[k * L + j];
+                RightElement = right[k * L + j];
+                if(RightElement != 0.0) {sum += left[i * K + k] * RightElement;}
             }
             if(PlusVector){Result[i * L + j] = sum + b[i];}
             else {Result[i * L + j] = sum;}
@@ -95,7 +107,7 @@ void MatrixMultiplication(std::vector<double>  const& right,
 
 
 // Transpose matrix
-void Transpose(std::vector<double> & Matrix, std::vector<int> & MatrixDimension)
+void Transpose(std::vector<double> & Matrix, std::vector<int> & MatrixDimension, bool DimensionToo = true)
 {
     int _dim1 = MatrixDimension[0];
     int _dim2 = MatrixDimension[1];
@@ -109,7 +121,7 @@ void Transpose(std::vector<double> & Matrix, std::vector<int> & MatrixDimension)
         }
     }
     std::copy(TranposedMatrix.begin(),TranposedMatrix.end(),Matrix.begin());
-    std::rotate(MatrixDimension.begin(),MatrixDimension.begin()+1,MatrixDimension.end());
+    if(DimensionToo) {std::rotate(MatrixDimension.begin(),MatrixDimension.begin()+1,MatrixDimension.end());}
 }
 
 // Normalize
@@ -188,7 +200,7 @@ auto CrossEntropy(std::vector<double> const& predicted, std::vector<double> cons
         }
     }
     
-    return -1./_size*sum;
+    return -sum;
 }
 
 
@@ -196,28 +208,34 @@ void SoftmaxBackward(std::vector<double> const& Prediction,
                      std::vector<int> const& Prediction_Dimension,
                      std::vector<double> const& TrueLabels,
                      std::vector<int> const& TrueLabels_Dimension,
-                     std::vector<double> & dLdz,
-                     std::vector<int>& dLdz_Dimension)
+                     std::vector<double> & Stepback,
+                     std::vector<int>& Stepback_Dimension)
 {
-    int M = Prediction_Dimension[0];
-    if(M != TrueLabels_Dimension[0]) {std::cout<<"error: row(P) != col(Y) \n";std::exit(-1);}
-    if(Prediction_Dimension[1] != TrueLabels_Dimension[1]) {std::cout<<"error: col(P) != rows(Y) \n";std::exit(-1);}
-    if(dLdz_Dimension[0] != TrueLabels_Dimension[1]) {std::cout<<"error: rows(dLdz) != cols(x) \n";std::exit(-1);}
-    if(dLdz_Dimension[1] != M) {std::cout<<"error: rows(dLdz) != rows(x) \n";std::exit(-1);}
+    int Row_P = Prediction_Dimension[0];
+    int Col_P = Prediction_Dimension[1];
+    int Row_Y = TrueLabels_Dimension[0];
+    int Col_Y = TrueLabels_Dimension[1];
+
+    if(Row_P != Row_Y) {std::cout<<"error: row(P) != row(Y) \n";std::exit(-1);}
+    if(Col_P != Col_Y) {std::cout<<"error: col(P) != col(Y) \n";std::exit(-1);}
+    if(Stepback_Dimension[1] != Col_Y) {std::cout<<"error: before transpose col(stepback) != col(Y) \n";std::exit(-1);}
+    if(Stepback_Dimension[0] != Row_Y) {std::cout<<"error: before transpose row(stepback) != row(Y) \n";std::exit(-1);}
 
     std::transform (Prediction.begin(),
                     Prediction.end(),
                     TrueLabels.begin(),
-                    dLdz.begin(),
-                    [&](auto const& x ,auto const& y){return (x-y)/M;});
+                    Stepback.begin(),
+                    [&](auto const& x ,auto const& y){return (x-y)/(double)Row_P;});
+    Transpose(Stepback,Stepback_Dimension);
 }
-
+template<typename F>
 void NonLinearBackward( std::vector<double> const& dLda,
                         std::vector<int> const& dLda_Dimension,
                         std::vector<double> const& Z,
                         std::vector<int> const& Z_Dimension,
                         std::vector<double> & dLdZ,
-                        std::vector<int> const& dLdZ_Dimension)
+                        std::vector<int> const& dLdZ_Dimension,
+                        F f)
 {
     if(dLda_Dimension[0] != Z_Dimension[0]) {std::cout<<"error: row(dlDa) != cols(Z) \n";std::exit(-1);}
     if(dLda_Dimension[1] != Z_Dimension[1]) {std::cout<<"error: col(dlDa) != cosl(Z) \n";std::exit(-1);}
@@ -229,7 +247,7 @@ void NonLinearBackward( std::vector<double> const& dLda,
                    dLda.end(),
                    Z.begin(),
                    dLdZ.begin(),
-                   [](auto const& x,auto const& y){return x*RELU_Derivative(y);}); 
+                   [&](auto const& x,auto const& y){return x*f(y);}); 
 }
 
 void LinearBackward(std::vector<double>& dLda,
@@ -309,3 +327,21 @@ void GradientDescent(std::vector<double> & W1,
                    DescentMove);
     
 }
+
+auto Accuracy(std::vector<int> & Labels,
+              std::vector<double> & P,
+              std::vector<double> tmp,
+              int Examples)
+{
+    double sum = 0.0;
+    int Predicted = 0;
+
+    for(int i = 0; i < Examples; i++)
+    {
+        for(int j = 0; j < 10; j++){tmp[j] = P[i*10 + j];}
+        Predicted = static_cast<int>(std::distance(tmp.begin(), std::max_element(tmp.begin(),tmp.end())));
+        if(Predicted == Labels[i]) {sum += 1;}
+    }
+    return sum/Examples;
+}
+
