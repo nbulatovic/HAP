@@ -37,7 +37,7 @@ void read_Mnist(std::string filename, std::vector<double> &vec)
         file.read((char*) &n_cols, sizeof(n_cols));
         n_cols = ReverseInt(n_cols);
         
-        //number_of_images = 200*16;
+        //number_of_images = 2;
         
         for(int i = 0; i < number_of_images; ++i)
         {
@@ -61,14 +61,14 @@ void read_Mnist_Label(std::string filename, std::vector<int> &vec)
     {
         int magic_number = 0;
         int number_of_images = 0;
-        int n_rows = 0;
-        int n_cols = 0;
+        //int n_rows = 0;
+        //int n_cols = 0;
         file.read((char*) &magic_number, sizeof(magic_number));
         magic_number = ReverseInt(magic_number);
         file.read((char*) &number_of_images,sizeof(number_of_images));
         number_of_images = ReverseInt(number_of_images);
 
-        //number_of_images = 200*16;
+        //number_of_images = 2;
         
         for(int i = 0; i < number_of_images; ++i)
         {

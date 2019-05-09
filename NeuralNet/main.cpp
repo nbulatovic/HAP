@@ -8,8 +8,7 @@
 
 /*
 Simple two layer neural net for MNIST's digit classification.
-Unit test isn't complete, only the most crucial parts are tested.
-The program uses std::vector containers, but no dynamic allocations.
+The program uses std::vector containers, but mostly no dynamic allocations.
 The notation and the variables are the following:
 
 Forward direction:
@@ -41,15 +40,20 @@ int main(int, char**) {
    NNtest(1e-15);
 
 
-   const std::string TrainingFile  = "mnist/t10k-images.idx3-ubyte";
-   const std::string TrainingLabelFile = "mnist/t10k-labels.idx1-ubyte";
+
+   const std::string TrainingFile  = "mnist/train-images.idx3-ubyte";
+   const std::string TrainingLabelFile = "mnist/train-labels.idx1-ubyte";
+
+   const std::string TestFile = "mnist/t10k-images.idx3-ubyte";
+   const std::string TestLabelFile = "mnist/t10k-labels.idx1-ubyte";
+
 
    //Parameters 
 
-   const int BatchSize = 100;  
+   const int BatchSize = 32;  
    const int Epoch = 20;
-   const double LearningRate = 0.01;
-   const int NumberOfImages = 10000;
+   const double LearningRate = 0.001;
+   int NumberOfImages = 60'000;
    const int Iteration = NumberOfImages / BatchSize;
    const int InputLayerDimension = 784; //28*28
    const int HiddenLayerDimension = 100;
@@ -62,6 +66,7 @@ int main(int, char**) {
    //Initialize layers
 
    //Input, output
+   
    std::vector<double> Input;
    std::vector<double> X(NumberOfBatchElement); 
    std::vector<double> Y(NumberOfBatchElementLabel);
@@ -140,23 +145,16 @@ int main(int, char**) {
    std::vector<double> tmp(10);
 
 
+   //TRAINING
+   std::cout << "Traning:" << std::endl;
    for(int k = 0; k < Epoch; k++)
    {
+
       std::cout<<"Epoch "<< k+1 << "/" << Epoch << std::endl;
       for(int i = 0; i< Iteration; i++)
       {   
-         if(i % 50 == 0){std::cout<<"Iteration "<< i+1 << "/" << Iteration << std::endl;}
-         
-         for(int j = 0; j < NumberOfBatchElement; j++)
-         {
-            X[j] = Input[i * NumberOfBatchElement + j];
-         }
-         
-
-         for(int l = 0; l < NumberOfBatchElementLabel; l++)
-         {
-            Y[l] = Encoded[i * NumberOfBatchElementLabel + l];
-         }
+         for(int j = 0; j < NumberOfBatchElement; j++) { X[j] = Input[i * NumberOfBatchElement + j];}
+         for(int l = 0; l < NumberOfBatchElementLabel; l++) {Y[l] = Encoded[i * NumberOfBatchElementLabel + l];}
 
               
         Transpose(X,X_Dimension);
@@ -173,8 +171,6 @@ int main(int, char**) {
 
         SoftmaxBackward(P,P_Dimension,Y,Y_Dimension,dLdZ2,dLdZ2_Dimension);
 
-
-      
 
         LinearBackward(dLda2,dLda2_Dimension,
                         dLdZ2,dLdZ2_Dimension,
@@ -202,35 +198,22 @@ int main(int, char**) {
       
    }
 
-   
-   
 
 std::ofstream output_file;
-output_file.open("Losses_acc.dat");
+output_file.open("Losses.dat");
 for(int i=0;i<Losses.size();i++) { output_file << std::setprecision(std::numeric_limits<long double>::digits10)  << Losses[i]  << std::endl;}  
 output_file.close();
 
-
+//ACCURACY ON TRAINING SET
 
 std::vector<double> Result(NumberOfImages * OutputLayerDimension);
 
-Z1.clear();
-Z1.resize(HiddenLayerDimension * NumberOfImages);
-a1.clear();
-a1.resize(HiddenLayerDimension * NumberOfImages);
-Z2.clear();
-Z2.resize(OutputLayerDimension * NumberOfImages);
-a2.clear();
-a2.resize(OutputLayerDimension * NumberOfImages);
+Clear(Z1,Z1_Dimension, HiddenLayerDimension , NumberOfImages);
+Clear(a1,a1_Dimension, HiddenLayerDimension , NumberOfImages);
+Clear(Z2,Z2_Dimension, OutputLayerDimension , NumberOfImages);
+Clear(a2,a2_Dimension, OutputLayerDimension , NumberOfImages);
 
 std::vector<int> Input_Dimension = {NumberOfImages, InputLayerDimension};
-
-
-Z1_Dimension = {HiddenLayerDimension, NumberOfImages};
-a1_Dimension = {HiddenLayerDimension, NumberOfImages};
-Z2_Dimension = {OutputLayerDimension, NumberOfImages};
-a2_Dimension = {OutputLayerDimension, NumberOfImages};
-
 
 Transpose(Input,Input_Dimension);
 LinearForwardStep(Input,W1,Z1,Input_Dimension,W1_Dimension,Z1_Dimension,b1,b1_Dimension);
@@ -242,6 +225,44 @@ Softmax(Z2,Z2_Dimension,Result);
 
 double Acc =  Accuracy(TrainingLabels,Result,tmp,NumberOfImages);
 
-std::cout << "Acc:\t"<< Acc << "\nDONE\n";
+std::cout << "Accuracy on TRAINING set:\t"<< Acc << std::endl;
+
+
+//ACCURACY ON TEST SET
+
+NumberOfImages = 10'000;
+
+std::vector<double> InputTest;
+std::vector<int> InputTest_Dimension = {NumberOfImages, InputLayerDimension};
+std::vector<double> ResultTest(NumberOfImages * OutputLayerDimension);
+std::vector<double> EncodedTest;
+std::vector<int> TestLabels(NumberOfImages * OutputLayerDimension);
+
+read_Mnist(TestFile, InputTest);
+Normalize(InputTest);
+read_Mnist_Label(TestLabelFile, TestLabels);
+EncodedTest = OneHotEncoding(TestLabels,NumberOfImages);
+
+Clear(Z1,Z1_Dimension, HiddenLayerDimension , NumberOfImages);
+Clear(a1,a1_Dimension, HiddenLayerDimension , NumberOfImages);
+Clear(Z2,Z2_Dimension, OutputLayerDimension , NumberOfImages);
+Clear(a2,a2_Dimension, OutputLayerDimension , NumberOfImages);
+
+
+Transpose(InputTest,InputTest_Dimension);
+LinearForwardStep(InputTest,W1,Z1,InputTest_Dimension,W1_Dimension,Z1_Dimension,b1,b1_Dimension);
+NonLinearStep(Z1,a1,RELU);
+LinearForwardStep(a1,W2,Z2,a1_Dimension,W2_Dimension,Z2_Dimension,b2,b2_Dimension);
+Transpose(Z2,Z2_Dimension);
+Softmax(Z2,Z2_Dimension,ResultTest);
+
+
+Acc = Accuracy(TestLabels,ResultTest,tmp,NumberOfImages);
+
+std::cout << "Accuracy on TEST set:\t"<< Acc << std::endl;
+
+
+
+std::cout << "DONE"<< std::endl;
 return 0;
 }

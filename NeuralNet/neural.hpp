@@ -345,3 +345,10 @@ auto Accuracy(std::vector<int> & Labels,
     return sum/Examples;
 }
 
+void Clear(std::vector<double> & Vec,std::vector<int> & VecDim, const int& NewSize1, const int& NewSize2)
+{
+    Vec.clear();
+    Vec.resize(NewSize1 * NewSize2);
+    VecDim = {NewSize1, NewSize2};
+}
+
