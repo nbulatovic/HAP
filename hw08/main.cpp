@@ -18,7 +18,7 @@ auto measure_matmul(int N)
 	std::vector<double> t_parallel2;
 
 
-	int number_of_measure = 5;
+	int number_of_measure = 10;
 	t.reserve(number_of_measure);
 	t_parallel2.reserve(number_of_measure);
 
@@ -32,7 +32,7 @@ auto measure_matmul(int N)
 		t.push_back((static_cast<std::chrono::duration<double, std::micro>>(t2-t1)).count());
 
 		auto t3 = std::chrono::high_resolution_clock::now();
-		Matrix<double> mat4 = parallel_matmul(mat1,mat2);
+		Matrix<double> mat4 = parallel_matmul(2,mat1,mat2);
 		auto t4 = std::chrono::high_resolution_clock::now();
 		
 		t_parallel2.push_back((static_cast<std::chrono::duration<double, std::micro>>(t4-t3)).count());
@@ -46,12 +46,10 @@ auto measure_matmul(int N)
 
 }
 
-inline auto cube = [](auto const& x){ return x*x*x  ; };
-
 int main(int, char**)
 {
 
-	std::vector<int> T = {2,4,8,16,32,64,128,256,512,1024,2045};
+	std::vector<int> T = {2,4,8,16,32,64,128,256,512,1024,2048};
 	std::vector<double> sizes;
 	std::vector<std::vector<double>>times;
 
@@ -59,7 +57,7 @@ int main(int, char**)
 	{
 		std::cout << t << std::endl;
 		times.push_back(measure_matmul(t));
-		sizes.push_back(cube(static_cast<double>(t)));
+		sizes.push_back(sq(static_cast<double>(t)));
 	}
 
 	std::ofstream output_file;

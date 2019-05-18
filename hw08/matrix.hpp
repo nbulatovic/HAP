@@ -512,35 +512,46 @@ std::istream& operator>>( std::istream& s, Matrix<T>& m )
 
 
 template<typename T>
-Matrix<T> parallel_matmul(Matrix<T>  const& m1, Matrix<T>  const& m2 )
+Matrix<T> parallel_matmul(int number_of_threads, Matrix<T>  const& m1, Matrix<T>  const& m2 )
 {
 
 	if(check_size(m1,m2))
     {
+
         const int _dim = m1.dim();
-        const int dim_per_tread1 = _dim / 2;
-        const int dim_per_tread2 = _dim - dim_per_tread1;
+        int dim_from = 0;
+        const int dim_delta = _dim / number_of_threads;
+        int dim_to = dim_delta;
 
         Matrix<T> Result(_dim);
 
-        auto thread_function = [&](int start_row,int number_of_rows)
+        auto thread_function = [&](int row_from,int row_to)
         {
+
             T value = static_cast<T>(0.0);
-            for(int i = 0; i < number_of_rows;i++)
+
+            for(int i = row_from ; i < row_to; ++i)
             {
-                for(int j = 0; j < _dim; j++)
+                for(int j = 0; j < _dim; ++j)
                 {
-                    for(int k=0;k<_dim;k++) {value += m1(start_row + i,k)*m2(k,j);}
-                    Result(start_row + i, j) = value;
+                    for(int k=0; k < _dim; k++) {value += m1(i,k)*m2(k,j);}
+                    Result(i, j) = value;
                     value = 0.0;
                 }
             }
         };
 
         std::vector<std::future<void>> futures;
-        futures.reserve(2);
-        futures.push_back(move(std::async(std::launch::async, thread_function, 0, dim_per_tread1)));
-        futures.push_back(move(std::async(std::launch::async, thread_function, dim_per_tread1, dim_per_tread2)));
+        futures.reserve(number_of_threads);
+
+        for(int t = 0; t < number_of_threads; t++)
+        {
+            if(t == number_of_threads -1){dim_to = _dim; }
+            auto tmp = std::async(std::launch::async, thread_function, dim_from, dim_to);
+            futures.push_back(move(tmp));
+            dim_from = dim_to;
+            dim_to += dim_delta; 
+        }
 
         for(auto& future: futures) {future.get();}
 
