@@ -631,7 +631,7 @@ void MatrixTest(double precision)
 		Matrix<double> ref(3,{860.9100000000001,1086.192,222.198,
 							102.96,590.2800000000001,74.598,
 							8825.1329999999998,8906.0235999999986,1001.2999});
-		Matrix<double> res = parallel_matmul(a,b);
+		Matrix<double> res = parallel_matmul(2,a,b);
 
 		if(b.size() != 9) { error("par matmul operator (l-value, l-value) test  [src size]");}
 		if(b.dim() != 3) { error("par matmul operator (l-value, l-value) test [src dim]");}
