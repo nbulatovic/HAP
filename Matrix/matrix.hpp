@@ -7,6 +7,8 @@
 #include <vector>
 #include <fstream>
 #include <random>
+#include <future>
+#include <thread> 
 
 namespace detail
 {
@@ -451,7 +453,6 @@ template<typename T>
 std::ostream& operator<<( std::ostream& s, Matrix<T> const& m )
 {
     int _dim = m.dim();
-    //s << "Size: " <<  _dim << "x" << _dim << "\n";
     for(int i=0;i<_dim;i++)
     {
         for(int j=0;j<_dim;j++)
@@ -507,6 +508,46 @@ std::istream& operator>>( std::istream& s, Matrix<T>& m )
                     [](auto const& x){return x;});
 
     return s;
+}
+
+
+template<typename T>
+Matrix<T> parallel_matmul(Matrix<T>  const& m1, Matrix<T>  const& m2 )
+{
+
+	if(check_size(m1,m2))
+    {
+        const int _dim = m1.dim();
+        const int dim_per_tread1 = _dim / 2;
+        const int dim_per_tread2 = _dim - dim_per_tread1;
+
+        Matrix<T> Result(_dim);
+
+        auto thread_function = [&](int start_row,int number_of_rows)
+        {
+            T value = static_cast<T>(0.0);
+            for(int i = 0; i < number_of_rows;i++)
+            {
+                for(int j = 0; j < _dim; j++)
+                {
+                    for(int k=0;k<_dim;k++) {value += m1(start_row + i,k)*m2(k,j);}
+                    Result(start_row + i, j) = value;
+                    value = 0.0;
+                }
+            }
+        };
+
+        std::vector<std::future<void>> futures;
+        futures.reserve(2);
+        futures.push_back(move(std::async(std::launch::async, thread_function, 0, dim_per_tread1)));
+        futures.push_back(move(std::async(std::launch::async, thread_function, dim_per_tread1, dim_per_tread2)));
+
+        for(auto& future: futures) {future.get();}
+
+        return Result;
+    }
+
+    
 }
 
 

@@ -623,7 +623,24 @@ void MatrixTest(double precision)
            a[8] != 99.99)   { error(">> operator test");   }		
 
 	}
+		//Test  parallel matmul (l-value, l-value)
+		{
+		Matrix<double> a(3,{3.5 , 5.2 ,  9.3, 6.6,  1.2,  0.0, 10.0,  24.0, 99.99});
+		Matrix<double> b(3,{15.6, 87.4, 4.03, 0.0, 11.2, 40.0, 86.7, 77.64, 0.01});
 
+		Matrix<double> ref(3,{860.9100000000001,1086.192,222.198,
+							102.96,590.2800000000001,74.598,
+							8825.1329999999998,8906.0235999999986,1001.2999});
+		Matrix<double> res = parallel_matmul(a,b);
+
+		if(b.size() != 9) { error("par matmul operator (l-value, l-value) test  [src size]");}
+		if(b.dim() != 3) { error("par matmul operator (l-value, l-value) test [src dim]");}
+		if(a.size() != 9) { error("par matmul operator (l-value, l-value) test  [src size]");}
+		if(a.dim() != 3) { error("par matmul operator (l-value, l-value) test [src dim]");}
+		if(res.size() != 9) { error("par matmul operator (l-value, l-value) test  [size]");}
+		if(res.dim() != 3) { error("par matmul operator (l-value, l-value) test [dim]");}
+		if(check_values(ref,res,precision)){ error("par matmul operator (l-value, l-value) test [res elements]"); }
+	}
 
 
     std::cout << "All tests are successful!\n";
@@ -631,7 +648,6 @@ void MatrixTest(double precision)
 
 int main(int, char**)
 {
-
 	MatrixTest(1e-15);
 	
 }
