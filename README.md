@@ -1,7 +1,7 @@
 ﻿# HAP
 Homeworks - Advanced applied programming course (Haladó alkalmazott programozás)
 
-The first two task compiled with *g++* only: g++ -std=c++17 -O2 -Wall -pedantic -pthread main.cpp. The others compiled with *Visual Studio Build Tools 2017 - x86_amd64* and *Clang 8.0.0 for MSVC with Visual Studio Build Tools 2017 amd64* (see the CMake files are in the folders).
+The first two task compiled with *g++* only: g++ -std=c++17 -O2 -Wall -pedantic -pthread main.cpp. The others compiled with *Visual Studio Build Tools 2017 - x86_amd64* and *Clang 8.0.0 for MSVC with Visual Studio Build Tools 2017 amd64* (see the CMake files in the folders).
 
 ### hw01's tasks 
 
@@ -41,11 +41,29 @@ The first two task compiled with *g++* only: g++ -std=c++17 -O2 -Wall -pedantic 
 - Optional: Measure all of the overloaded matrix multiplication functions ✔
 - Results: plot_results.html ✔
 
-### Matrix class
+### Matrix class 
 
-- Homework 5 and 6
+- Homework 5 and 6 ✔
 - Mathemathical square matrix class implementation with basic functionalities: matrix.hpp
 - With unit test: test.cpp
+
+### Neural net 
+
+- The assignment of the semester ✔
+- Simple two layer NN implementation: neural.hpp
+- Slightly modified file reader from [a link](http://eric-yuan.me/cpp-read-mnist/): ReadMNIST.h
+- Unit test: test.hpp
+
+### hw08's tasks
+
+- Time measurement on parallelized matrix multiplication: main.cpp ✔
+
+### hw09's tasks
+
+- Time measurement on parallelized linear regression (hw03)
+- Conways' life game parallelization by columns 
+- Optional: with Parallel STL
+
 
 
 
