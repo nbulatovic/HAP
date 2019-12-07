@@ -1,7 +1,7 @@
 ﻿# HAP
 Homeworks - Advanced applied programming course (Haladó alkalmazott programozás)
 
-The first two task compiled with *g++* only: g++ -std=c++17 -O2 -Wall -pedantic -pthread main.cpp. The others compiled with *Visual Studio Build Tools 2017 - x86_amd64* and *Clang 8.0.0 for MSVC with Visual Studio Build Tools 2017 amd64* (see the CMake files in the folders).
+The first two task compiled with *g++* only: ```g++ -std=c++17 -O2 -Wall -pedantic -pthread main.cpp```. The others compiled with *Visual Studio Build Tools 2017 - x86_amd64* and *Clang 8.0.0 for MSVC with Visual Studio Build Tools 2017 amd64* (see the CMake files in the folders).
 
 ### hw01's tasks 
 
